@@ -4,9 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Tg.PublicityHelperBot.Infrastructure;
+using Tg.PublicityHelperBot.Services;
 
 namespace Tg.PublicityHelperBot
 {
@@ -22,6 +21,14 @@ namespace Tg.PublicityHelperBot
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IUpdateService, UpdateService>();
+            services.AddScoped<IBotService, BotService>();
+            services.AddSingleton<IChatCollectionService, ChatCollectionService>();
+
+            services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
+            services
+                .AddControllers()
+                .AddNewtonsoftJson();
         }
         
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -32,6 +39,11 @@ namespace Tg.PublicityHelperBot
             }
 
             app.UseRouting();
+            app.UseCors();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
