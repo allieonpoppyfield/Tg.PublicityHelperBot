@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Tg.PublicityHelperBot.Services
 {
@@ -53,9 +54,9 @@ namespace Tg.PublicityHelperBot.Services
             }
         }
 
-        public async Task SendMessage(string message, long chatId)
+        public async Task SendTextMessageAssync(long chatId, string text, IReplyMarkup replyMarkup)
         {
-            await _botService.Client.SendTextMessageAsync(chatId, message);
+            await _botService.Client.SendTextMessageAsync(chatId: chatId, text: text, replyMarkup: replyMarkup);
         }
     }
 }

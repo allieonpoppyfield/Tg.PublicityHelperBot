@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Tg.PublicityHelperBot.Models;
 using Tg.PublicityHelperBot.Services;
 
 namespace Tg.PublicityHelperBot.Controllers
@@ -24,7 +25,17 @@ namespace Tg.PublicityHelperBot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            await _updateService.SendMessage("нет сообщения", update.Message.Chat.Id);
+            string messageText = update.Message.Text;
+            switch (messageText)
+            {
+                //главное меню
+                case MenuItemNames.MainMenuStart:
+                case MenuItemNames.MainMenuVisible:
+                    await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.MainMenuMessage, MenuItemMarkups.MainMenuItems);
+                    break;
+                default: break;
+            }
+
 
             //StateEdin curSt = _stateService.List.FirstOrDefault(x => x.ChatId == update.Message.Chat.Id);
             //if (curSt == null)
