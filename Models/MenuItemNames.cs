@@ -27,5 +27,10 @@ namespace Tg.PublicityHelperBot.Models
         /// Добавить канал
         /// </summary>
         public const string AddChannel = "🧷 Добавить канал";
+
+        /// <summary>
+        /// Оплатить подписку
+        /// </summary>
+        public const string PayForSubscription = "💸 Оплатить подписку";
     }
 }

@@ -23,12 +23,26 @@ namespace Tg.PublicityHelperBot.Models
                     new KeyboardButton[]
                     {
                         new KeyboardButton(MenuItemNames.AddChannel)
+                    }
+                }
+            };
+        public static IReplyMarkup EditPostItems =>
+            new ReplyKeyboardMarkup()
+            {
+                Keyboard =
+                new KeyboardButton[][]
+                {
+                    new KeyboardButton[]
+                    {
+                        new KeyboardButton(MenuItemNames.PayForSubscription),
                     },
+                   
                     new KeyboardButton[]
                     {
                         new KeyboardButton(MenuItemNames.MainMenuVisible),
                     }
                 }
             };
+
     }
 }

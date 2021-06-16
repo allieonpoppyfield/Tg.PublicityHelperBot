@@ -21,19 +21,24 @@ namespace Tg.PublicityHelperBot.Controllers
             _chatCollectionService = chatCollectionService;
         }
 
-        // POST api/update
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
             string messageText = update.Message.Text;
+            var me = update.Message.From;
             switch (messageText)
             {
+                //редактирование поста
+                case MenuItemNames.EditPost:
+                    await EditPostAction(update);
+                    break;
+
                 //главное меню
                 case MenuItemNames.MainMenuStart:
                 case MenuItemNames.MainMenuVisible:
-                    await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.MainMenuMessage, MenuItemMarkups.MainMenuItems);
+                default:
+                    await MainMenuAction(update);
                     break;
-                default: break;
             }
 
 
@@ -57,10 +62,14 @@ namespace Tg.PublicityHelperBot.Controllers
             return Ok();
         }
 
-        [HttpGet]
-        public string Post()
+        private async Task MainMenuAction(Update update)
         {
-            return "besla";
+            await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.MainMenuMessage, MenuItemMarkups.MainMenuItems);
+        }
+
+        private async Task EditPostAction(Update update)
+        {
+            await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.EditPostMessage, MenuItemMarkups.EditPostItems);
         }
     }
 }
