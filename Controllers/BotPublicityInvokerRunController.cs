@@ -71,6 +71,7 @@ namespace Tg.PublicityHelperBot.Controllers
 
         private async Task MainMenuAction(Update update)
         {
+            await _updateService.SendTextMessageAssync(update.Message.Chat.Id, update.Message.Chat.Username, MenuItemMarkups.MainMenuItems);
             await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.MainMenuMessage, MenuItemMarkups.MainMenuItems);
         }
 
