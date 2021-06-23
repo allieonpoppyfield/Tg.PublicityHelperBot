@@ -62,6 +62,13 @@ namespace Tg.PublicityHelperBot.Controllers
             return Ok();
         }
 
+        [HttpGet]
+        public string Post()
+        {
+            return "Test";
+        }
+
+
         private async Task MainMenuAction(Update update)
         {
             await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.MainMenuMessage, MenuItemMarkups.MainMenuItems);
