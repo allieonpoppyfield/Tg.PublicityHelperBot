@@ -9,7 +9,6 @@ namespace Tg.PublicityHelperBot.Services
 {
     public interface IUpdateService
     {
-        Task EchoAsync(Update update);
         Task SendTextMessageAssync(long chatId, string text, IReplyMarkup replyMarkup);
     }
 }

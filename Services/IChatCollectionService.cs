@@ -8,6 +8,6 @@ namespace Tg.PublicityHelperBot.Services
 {
     public interface IChatCollectionService
     {
-        public List<ChatElement> ChatElements { get; }
+        public List<LocalChat> LocalChatsList { get; }
     }
 }

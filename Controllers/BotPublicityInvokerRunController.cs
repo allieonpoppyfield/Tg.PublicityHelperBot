@@ -12,52 +12,36 @@ namespace Tg.PublicityHelperBot.Controllers
     [Route("api/[controller]")]
     public class BotPublicityInvokerRunController : Controller
     {
-        private readonly IUpdateService _updateService;
         private readonly IChatCollectionService _chatCollectionService;
+        private readonly IUpdateService _updateService;
 
-        public BotPublicityInvokerRunController(IUpdateService updateService, IChatCollectionService chatCollectionService)
+        public BotPublicityInvokerRunController(IChatCollectionService chatCollectionService, IUpdateService updateService)
         {
-            _updateService = updateService;
             _chatCollectionService = chatCollectionService;
+            _updateService = updateService;
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            string messageText = update.Message.Text;
-            var me = update.Message.From;
-            switch (messageText)
-            {
-                //редактирование поста
-                case MenuItemNames.EditPost:
-                    await EditPostAction(update);
-                    break;
+            var chatID = update.Message.Chat.Id;
+            var currentChat = _chatCollectionService.LocalChatsList.FirstOrDefault(x => x.ChatId == chatID);
 
-                //главное меню
-                case MenuItemNames.MainMenuStart:
-                case MenuItemNames.MainMenuVisible:
-                default:
-                    await MainMenuAction(update);
-                    break;
+            if (currentChat == null)
+            {
+                currentChat = new LocalChat();
+                currentChat.ChatId = chatID;
+                currentChat.updateService = _updateService;
+                _chatCollectionService.LocalChatsList.Add(currentChat);
+                await currentChat.SetState(Models.UserStates.UserStatesEnum.MainMenu);
             }
 
+            else
+            {
+                currentChat.updateService = _updateService;
+                await currentChat.State.ProcessUpdate(update);
+            }
 
-            //StateEdin curSt = _stateService.List.FirstOrDefault(x => x.ChatId == update.Message.Chat.Id);
-            //if (curSt == null)
-            //{
-            //    curSt = new StateEdin(update.Message.Chat.Id);
-            //    _stateService.List.Add(curSt);
-            //}
-
-            //var txt = update.Message.Text;
-            //if (txt.ToLower().Contains("запомни это"))
-            //{
-            //    curSt.CurrentMessage = txt.Replace("запомни это", "");
-            //}
-            //else if (txt.ToLower() == "повтори")
-            //{
-            //    await _updateService.SendMessage(curSt.CurrentMessage == "" ? "нет сообщения" : curSt.CurrentMessage, update.Message.Chat.Id);
-            //}
 
             return Ok();
         }
@@ -66,18 +50,6 @@ namespace Tg.PublicityHelperBot.Controllers
         public string Post()
         {
             return "Test";
-        }
-
-
-        private async Task MainMenuAction(Update update)
-        {
-            await _updateService.SendTextMessageAssync(update.Message.Chat.Id, update.Message.Chat.Username ?? "Нет имени у теби", MenuItemMarkups.MainMenuItems);
-            await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.MainMenuMessage, MenuItemMarkups.MainMenuItems);
-        }
-
-        private async Task EditPostAction(Update update)
-        {
-            await _updateService.SendTextMessageAssync(update.Message.Chat.Id, Messages.EditPostMessage, MenuItemMarkups.EditPostItems);
         }
     }
 }
