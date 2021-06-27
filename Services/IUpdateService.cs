@@ -9,6 +9,7 @@ namespace Tg.PublicityHelperBot.Services
 {
     public interface IUpdateService
     {
-        Task SendTextMessageAssync(long chatId, string text, IReplyMarkup replyMarkup);
+        Task SendTextMessageAssync(long chatId, string text, IReplyMarkup replyMarkup = null);
+        Task<bool> IsAdmin(long chatId);
     }
 }

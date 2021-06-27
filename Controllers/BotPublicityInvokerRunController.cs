@@ -24,6 +24,10 @@ namespace Tg.PublicityHelperBot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
+            if (update.Message == null)
+                return Ok();
+
+
             var chatID = update.Message.Chat.Id;
             var currentChat = _chatCollectionService.LocalChatsList.FirstOrDefault(x => x.ChatId == chatID);
 

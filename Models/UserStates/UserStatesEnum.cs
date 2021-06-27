@@ -8,6 +8,7 @@ namespace Tg.PublicityHelperBot.Models.UserStates
     public enum UserStatesEnum
     {
         MainMenu = 1,
-        EditPost = 2
+        EditPost = 2,
+        AddChannel = 3,
     }
 }

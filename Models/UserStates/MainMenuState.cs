@@ -21,6 +21,11 @@ namespace Tg.PublicityHelperBot.Models.UserStates
             {
                 await localChatItem.SetState(UserStatesEnum.EditPost);
             }
+            
+            if (update.Message.Text == MenuItemNames.AddChannel)
+            {
+                await localChatItem.SetState(UserStatesEnum.AddChannel);
+            }
         }
 
         public override  async Task StateSelected(long ChatId)

@@ -22,6 +22,26 @@ namespace Tg.PublicityHelperBot.Services
             _logger = logger;
         }
 
+        public async Task<bool> IsAdmin(long chatId)
+        {
+            try
+            {
+                var member =  await _botService.Client.GetChatMemberAsync(chatId, _botService.Client.BotId.Value);
+                if (member != null)
+                {
+                    if (member.Status == ChatMemberStatus.Administrator)
+                        return true;
+                    return false;
+                }
+                else return false;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
         public async Task SendTextMessageAssync(long chatId, string text, IReplyMarkup replyMarkup)
         {
             await _botService.Client.SendTextMessageAsync(chatId: chatId, text: text, replyMarkup: replyMarkup);

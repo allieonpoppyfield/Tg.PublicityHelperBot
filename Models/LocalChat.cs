@@ -26,6 +26,10 @@ namespace Tg.PublicityHelperBot.Models
                     State = new EditPostState(updateService, this);
                     await State.StateSelected(ChatId);
                     break;
+                case UserStatesEnum.AddChannel:
+                    State = new AddChannelState(updateService, this);
+                    await State.StateSelected(ChatId);
+                    break;
             }
         }
     }
