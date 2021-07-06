@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Tg.PublicityHelperBot.Infrastructure;
 
-namespace Tg.PublicityHelperBot.Services
+namespace Tg.PublicityHelperBot.Services.Bot
 {
     public class BotService : IBotService
     {
@@ -17,7 +17,7 @@ namespace Tg.PublicityHelperBot.Services
             _config = config.Value;
             Client = new TelegramBotClient(_config.BotToken);
             //Client.SetWebhookAsync("https://tgpublicityhelperbot.azurewebsites.net/api/BotPublicityInvokerRun");
-            Client.SetWebhookAsync("https://f06561a27e2d.ngrok.io/api/BotPublicityInvokerRun");
+            Client.SetWebhookAsync("https://77ca97da9680.ngrok.io/api/BotPublicityInvokerRun");
         }
         public TelegramBotClient Client { get; }
     }

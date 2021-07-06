@@ -4,51 +4,66 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using Tg.PublicityHelperBot.Models;
-using Tg.PublicityHelperBot.Services;
+using Tg.PublicityHelperBot.Services.Bot;
+using Tg.PublicityHelperBot.Static;
 
 namespace Tg.PublicityHelperBot.Controllers
 {
     [Route("api/[controller]")]
     public class BotPublicityInvokerRunController : Controller
     {
-        private readonly IChatCollectionService _chatCollectionService;
         private readonly IUpdateService _updateService;
 
-        public BotPublicityInvokerRunController(IChatCollectionService chatCollectionService, IUpdateService updateService)
+        public BotPublicityInvokerRunController(IUpdateService updateService)
         {
-            _chatCollectionService = chatCollectionService;
             _updateService = updateService;
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            if (update.Message == null)
-                return Ok();
-
-
-            var chatID = update.Message.Chat.Id;
-            var currentChat = _chatCollectionService.LocalChatsList.FirstOrDefault(x => x.ChatId == chatID);
-
-            if (currentChat == null)
+            if (update.Message != null && update.CallbackQuery == null)
             {
-                currentChat = new LocalChat();
-                currentChat.ChatId = chatID;
-                currentChat.updateService = _updateService;
-                _chatCollectionService.LocalChatsList.Add(currentChat);
-                await currentChat.SetState(Models.UserStates.UserStatesEnum.MainMenu);
+               await ManageTextMessage(update);
             }
-
-            else
+            if(update.CallbackQuery != null)
             {
-                currentChat.updateService = _updateService;
-                await currentChat.State.ProcessUpdate(update);
+                await ManageCallBack(update);
             }
-
 
             return Ok();
         }
+
+        private async Task ManageCallBack(Update update)
+        {
+            if (update.CallbackQuery.Data == CallBackActionNames.MainMenu)
+            {
+                await _updateService.HandleMainMenulAction(update);
+            }
+
+            if (update.CallbackQuery.Data == CallBackActionNames.AddChannel)
+            {
+                await _updateService.HandleAddChannelAction(update);
+            }
+        }
+
+        private async Task ManageTextMessage(Update update)
+        {
+            string textMessage = update.Message.Text;
+            if (textMessage == "/start")
+            {
+                await _updateService.HandleStartMessage(update);
+            }
+            else if(textMessage == KeyboardTitles.MainMenuTitle)
+            {
+                await _updateService.HandleMainMenuMessage(update);
+            }
+            else if (textMessage == KeyboardTitles.AccountTitle)
+            {
+                await _updateService.HandleAccountMenuMessage(update);
+            }
+        }
+
 
         [HttpGet]
         public string Post()

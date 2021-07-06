@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using Tg.PublicityHelperBot.Infrastructure;
-using Tg.PublicityHelperBot.Services;
+using Tg.PublicityHelperBot.Services.Bot;
 
 namespace Tg.PublicityHelperBot
 {
@@ -23,7 +23,6 @@ namespace Tg.PublicityHelperBot
         {
             services.AddScoped<IUpdateService, UpdateService>();
             services.AddScoped<IBotService, BotService>();
-            services.AddSingleton<IChatCollectionService, ChatCollectionService>();
 
             services.Configure<BotConfiguration>(Configuration.GetSection("BotConfiguration"));
             services
