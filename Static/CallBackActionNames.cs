@@ -11,5 +11,7 @@ namespace Tg.PublicityHelperBot.Static
         public static readonly string EditPost = "edit_post";
         public static readonly string AddChannel = "add_channel";
         public static readonly string MainMenu = "main_menu";
+
+        public static readonly string Account = "account";
     }
 }
