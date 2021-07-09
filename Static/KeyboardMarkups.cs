@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.ReplyMarkups;
+using Tg.PublicityHelperBot.Models.Database;
 
 namespace Tg.PublicityHelperBot.Static
 {
@@ -49,15 +50,57 @@ namespace Tg.PublicityHelperBot.Static
         });
 
 
-        public static IReplyMarkup Account => new InlineKeyboardMarkup(new List<InlineKeyboardButton>()
+        public static IReplyMarkup Account(List<Channel> channels)
         {
-            new()
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            foreach (Channel channel in channels)
             {
-                Text =  KeyboardTitles.AddChannel,
-                CallbackData = CallBackActionNames.AddChannel,
+                keyboardList.Add
+                    (
+                        new List<InlineKeyboardButton>()
+                        {
+                            new InlineKeyboardButton()
+                            {
+                                Text = channel.Title,
+                                CallbackData = $"{CallBackActionNames.ChannelInfo}|{channel.ID}"
+                            }
+                        }
+                    );
             }
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.Back,
+                    CallbackData = CallBackActionNames.MainMenu
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
 
-        });
-
+        public static InlineKeyboardMarkup ChannelInfo(Channel channel)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            keyboardList.Add
+                (
+                    new List<InlineKeyboardButton>()
+                    {
+                        new InlineKeyboardButton()
+                        {
+                            Text = KeyboardTitles.BuySubscription,
+                            CallbackData = $"{CallBackActionNames.BuySubscription}|{channel.ID}"
+                        }
+                    }
+                );
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.DeleteChannel,
+                    CallbackData = CallBackActionNames.DeleteChannel
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
     }
 }

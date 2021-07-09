@@ -34,9 +34,13 @@ namespace Tg.PublicityHelperBot.Services.Bot
             //await _botService.Client.DeleteMessageAsync(chatId, update.Message.MessageId);
             string txt = $"Ваш ID: {user.ChatID}{Environment.NewLine}" +
                 $"Вы с нами с {user.RegisterDate}.{Environment.NewLine}" +
+                $"Список ваших каналов приведен ниже.{Environment.NewLine}" +
                 $"Для управления каналом, нажмите на его название.{Environment.NewLine}" +
                 $"Либо добавьте новый канал.";
-            await _botService.Client.SendTextMessageAsync(chatId, txt, replyMarkup: KeyboardMarkups.Account);
+
+            var channelList = _context.Channels.Where(x => x.OwnerId == user.ID).ToListAsync();
+            channelList.Wait();
+            await _botService.Client.SendTextMessageAsync(chatId, txt, replyMarkup: KeyboardMarkups.Account(channelList.Result));
         }
 
 
@@ -146,6 +150,22 @@ namespace Tg.PublicityHelperBot.Services.Bot
             await _context.SaveChangesAsync();
 
             await _botService.Client.SendTextMessageAsync(chatId, $"Канал успешно добавлен.");
+        }
+
+        public async Task HandleChannelInfoAction(Update update)
+        {
+            var callBackData = update.CallbackQuery.Data;
+            string stringChannelId = callBackData.Substring(callBackData.IndexOf("|") + 1);
+            if (int.TryParse(stringChannelId, out int _channelId))
+            {
+                Channel channel = _context.Channels.FirstOrDefault(x => x.ID == _channelId);
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.ChannelInfo);
+
+                var txt = $"Выбран канал {channel.Title}.{Environment.NewLine}" +
+                    $"Подписка активна до {channel.SubscriptionEndDate}.{Environment.NewLine}";
+                
+                await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, txt, replyMarkup: KeyboardMarkups.ChannelInfo(channel));
+            }
         }
     }
 }

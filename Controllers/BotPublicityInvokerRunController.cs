@@ -25,7 +25,7 @@ namespace Tg.PublicityHelperBot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            if(update.Message != null && update.Message.ForwardFromChat != null && update.Message.ForwardFromChat.Type == Telegram.Bot.Types.Enums.ChatType.Channel)
+            if (update.Message != null && update.Message.ForwardFromChat != null && update.Message.ForwardFromChat.Type == Telegram.Bot.Types.Enums.ChatType.Channel)
             {
                 await ManageForwardedMessage(update);
             }
@@ -50,14 +50,24 @@ namespace Tg.PublicityHelperBot.Controllers
 
         private async Task ManageCallBack(Update update)
         {
-            if (update.CallbackQuery.Data == CallBackActionNames.MainMenu)
+            var callBackData = update.CallbackQuery.Data;
+
+            if (callBackData == CallBackActionNames.MainMenu)
             {
                 await _updateService.HandleMainMenulAction(update);
             }
 
-            if (update.CallbackQuery.Data == CallBackActionNames.AddChannel)
+            if (callBackData == CallBackActionNames.AddChannel)
             {
                 await _updateService.HandleAddChannelAction(update);
+            }
+
+            if (callBackData.StartsWith(CallBackActionNames.ChannelInfo))
+            {
+
+
+                await _updateService.HandleChannelInfoAction(update);
+
             }
         }
 

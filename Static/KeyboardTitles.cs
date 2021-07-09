@@ -16,5 +16,9 @@ namespace Tg.PublicityHelperBot.Static
 
         public static readonly string AddChannel = "🔧 добавить канал";
         public static readonly string Back = "<< назад";
+
+        public static readonly string DeleteChannel = "Удалить канал";
+        public static readonly string BuySubscription = "Продлить подписку на месяц";
+
     }
 }
