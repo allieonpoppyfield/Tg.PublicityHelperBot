@@ -71,6 +71,14 @@ namespace Tg.PublicityHelperBot.Static
             {
                 new()
                 {
+                    Text = KeyboardTitles.AddChannel,
+                    CallbackData = CallBackActionNames.AddChannel
+                }
+            });
+            keyboardList.Add(new()
+            {
+                new()
+                {
                     Text = KeyboardTitles.Back,
                     CallbackData = CallBackActionNames.MainMenu
                 }
