@@ -8,7 +8,8 @@ namespace Tg.PublicityHelperBot.Static
     public static class CallBackActionNames
     {
         public static readonly string CreatePost = "create_post";
-        public static readonly string EditPost = "edit_post";
+        public static readonly string EditPostForChannel = "edit_post_for_channel";
+        public static readonly string EditMessage = "edit_message";
         public static readonly string AddChannel = "add_channel";
         public static readonly string MainMenu = "main_menu";
 

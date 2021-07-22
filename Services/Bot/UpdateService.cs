@@ -216,10 +216,27 @@ namespace Tg.PublicityHelperBot.Services.Bot
         public async Task HandlePublishAction(Update update)
         {
             TgUser user = await _context.TgUsers.FirstOrDefaultAsync(x => x.ChatID == update.CallbackQuery.Message.Chat.Id);
+
             if (user == null || !user.CurrentAction.StartsWith(CallBackActionNames.CreatePost + "|")) return;
             var publishChannelId = long.Parse(user.CurrentAction[(user.CurrentAction.IndexOf("|") + 1)..]);
             var text = update.CallbackQuery.Message.Text;
-            await _botService.Client.SendTextMessageAsync(publishChannelId, text);
+
+            Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ChannelId == publishChannelId && x.OwnerId == user.ID);
+            if (channel == null) return;
+
+
+            var message = await _botService.Client.SendTextMessageAsync(publishChannelId, text);
+
+            UserMessage userMessage = new()
+            {
+                MessageId = message.MessageId,
+                Channel = channel,
+                Text = text.Substring(0, 10) + "..."
+            };
+
+            await _context.UserMessages.AddAsync(userMessage);
+            await _context.SaveChangesAsync();
+
             await _botService.Client.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Сообщение опубликовано", replyMarkup: KeyboardMarkups.Default);
         }
 
@@ -250,5 +267,31 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 replyMarkup: KeyboardMarkups.BackButton(CallBackActionNames.Account));
         }
 
+        public async Task HandleEditPostAction(Update update)
+        {
+            var chatId = update.CallbackQuery.Message.Chat.Id;
+            TgUser user = _context.TgUsers.FirstOrDefault(x => x.ChatID == chatId);
+            if (!update.CallbackQuery.Data.Contains("|"))
+            {
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.EditPostForChannel, user);
+                var channelList = _context.Channels.Where(x => x.OwnerId == user.ID).ToListAsync();
+                channelList.Wait();
+                var txt = $"Выберите канал для редактирования публикации.";
+                await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, txt, replyMarkup: (InlineKeyboardMarkup)KeyboardMarkups.EditPost(channelList.Result));
+            }
+            else
+            {
+                var callBackData = update.CallbackQuery.Data;
+                var chId = callBackData[(callBackData.IndexOf("|") + 1)..];
+                Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == int.Parse(chId));
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.EditPostForChannel + "|" + channel.ChannelId, user);
+                
+                var messageList = _context.UserMessages.Where(x => x.ChannelId == channel.ID).ToListAsync();
+                messageList.Wait();
+
+                await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, 
+                    update.CallbackQuery.Message.MessageId, "Выберите редактируемое сообщение:", replyMarkup: (InlineKeyboardMarkup)KeyboardMarkups.MessageList(messageList.Result));
+            }
+        }
     }
 }

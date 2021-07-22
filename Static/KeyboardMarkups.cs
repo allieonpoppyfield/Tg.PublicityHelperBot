@@ -45,7 +45,7 @@ namespace Tg.PublicityHelperBot.Static
             new()
             {
                 Text =  KeyboardTitles.EditPost,
-                CallbackData = CallBackActionNames.EditPost
+                CallbackData = CallBackActionNames.EditPostForChannel
             }
         });
 
@@ -183,6 +183,63 @@ namespace Tg.PublicityHelperBot.Static
                 {
                     Text = KeyboardTitles.NoDelete,
                     CallbackData = $"{CallBackActionNames.ChannelInfo}|{channel.ID}"
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
+        internal static InlineKeyboardMarkup EditPost(List<Channel> channels)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            foreach (Channel channel in channels)
+            {
+                keyboardList.Add
+                    (
+                        new List<InlineKeyboardButton>()
+                        {
+                            new InlineKeyboardButton()
+                            {
+                                Text = channel.Title,
+                                CallbackData = $"{CallBackActionNames.EditPostForChannel}|{channel.ID}"
+                            }
+                        }
+                    );
+            }
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.Back,
+                    CallbackData = CallBackActionNames.MainMenu
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
+
+        internal static InlineKeyboardMarkup MessageList(List<UserMessage> messages)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            foreach (UserMessage message in messages)
+            {
+                keyboardList.Add
+                    (
+                        new List<InlineKeyboardButton>()
+                        {
+                            new InlineKeyboardButton()
+                            {
+                                Text = message.Text,
+                                CallbackData = $"{CallBackActionNames.EditMessage}|{message.Id}"
+                            }
+                        }
+                    );
+            }
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.Back,
+                    CallbackData = CallBackActionNames.EditPostForChannel
                 }
             });
             return new InlineKeyboardMarkup(keyboardList);

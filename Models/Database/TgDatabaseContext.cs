@@ -12,5 +12,6 @@ namespace Tg.PublicityHelperBot.Models.Database
         { }
         public DbSet<TgUser> TgUsers { get; set; }
         public DbSet<Channel> Channels { get; set; }
+        public DbSet<UserMessage> UserMessages { get; set; }
     }
 }

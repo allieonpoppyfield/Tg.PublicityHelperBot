@@ -78,6 +78,12 @@ namespace Tg.PublicityHelperBot.Controllers
             {
                 await _updateService.HandleCreatePostAction(update);
             }
+            
+            else if (callBackData.StartsWith(CallBackActionNames.EditPostForChannel))
+            {
+                await _updateService.HandleEditPostAction(update);
+            }
+            
             else if (callBackData.StartsWith(CallBackActionNames.Publish))
             {
                 await _updateService.HandlePublishAction(update);

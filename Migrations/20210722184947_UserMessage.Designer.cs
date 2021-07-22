@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tg.PublicityHelperBot.Models.Database;
 
 namespace Tg.PublicityHelperBot.Migrations
 {
     [DbContext(typeof(TgDatabaseContext))]
-    partial class TgDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20210722184947_UserMessage")]
+    partial class UserMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,9 +83,6 @@ namespace Tg.PublicityHelperBot.Migrations
 
                     b.Property<long>("MessageId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
