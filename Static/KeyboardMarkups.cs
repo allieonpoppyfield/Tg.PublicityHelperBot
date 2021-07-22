@@ -49,6 +49,58 @@ namespace Tg.PublicityHelperBot.Static
             }
         });
 
+        public static IReplyMarkup CreatingPost()
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.Publish,
+                    CallbackData = CallBackActionNames.Publish
+                }
+            });
+
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.MainMenuTitle,
+                    CallbackData = CallBackActionNames.MainMenu
+                }
+            });
+
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
+        public static IReplyMarkup CreatePost(List<Channel> channels)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            foreach (Channel channel in channels)
+            {
+                keyboardList.Add
+                    (
+                        new List<InlineKeyboardButton>()
+                        {
+                            new InlineKeyboardButton()
+                            {
+                                Text = channel.Title,
+                                CallbackData = $"{CallBackActionNames.CreatePost}|{channel.ID}"
+                            }
+                        }
+                    );
+            }
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.Back,
+                    CallbackData = CallBackActionNames.MainMenu
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
 
         public static IReplyMarkup Account(List<Channel> channels)
         {
@@ -105,7 +157,32 @@ namespace Tg.PublicityHelperBot.Static
                 new()
                 {
                     Text = KeyboardTitles.DeleteChannel,
-                    CallbackData = CallBackActionNames.DeleteChannel
+                    CallbackData = $"{CallBackActionNames.DeleteChannel}|{channel.ID}"
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
+        public static InlineKeyboardMarkup DeleteChannel(Channel channel)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            keyboardList.Add
+                (
+                    new List<InlineKeyboardButton>()
+                    {
+                        new InlineKeyboardButton()
+                        {
+                            Text = KeyboardTitles.YesDelete,
+                            CallbackData = $"{CallBackActionNames.YesDelete}|{channel.ID}"
+                        }
+                    }
+                );
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.NoDelete,
+                    CallbackData = $"{CallBackActionNames.ChannelInfo}|{channel.ID}"
                 }
             });
             return new InlineKeyboardMarkup(keyboardList);

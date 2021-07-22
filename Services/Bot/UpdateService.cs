@@ -43,21 +43,32 @@ namespace Tg.PublicityHelperBot.Services.Bot
             await _botService.Client.SendTextMessageAsync(chatId, txt, replyMarkup: KeyboardMarkups.Account(channelList.Result));
         }
 
+        public async Task HandleAccountMenuAction(Update update)
+        {
+            update.Message = new Message
+            {
+                Chat = new Chat { Id = update.CallbackQuery.Message.Chat.Id }
+            };
+            await HandleAccountMenuMessage(update);
+        }
+
 
         public async Task HandleAddChannelAction(Update update)
         {
             var chatId = update.CallbackQuery.Message.Chat.Id;
             await SetUserState(chatId, CallBackActionNames.AddChannel);
             await _botService.Client.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Добавьте нашего бота (@publicity_helper_bot) в список администраторов" +
-                " добавляемого канала и перешлите сюда любое сообщение с этого канала.", replyMarkup: KeyboardMarkups.BackButton(CallBackActionNames.MainMenu));
+                " добавляемого канала и перешлите сюда любое сообщение с этого канала.", replyMarkup: KeyboardMarkups.BackButton(CallBackActionNames.Account));
         }
 
 
         public async Task HandleMainMenulAction(Update update)
         {
-            var chatId = update.CallbackQuery.Message.Chat.Id;
-            await SetUserState(chatId, CallBackActionNames.MainMenu);
-            await _botService.Client.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Выберите требуемое действие", replyMarkup: KeyboardMarkups.MainMenu);
+            update.Message = new Message
+            {
+                Chat = new Chat { Id = update.CallbackQuery.Message.Chat.Id }
+            };
+            await HandleMainMenuMessage(update);
         }
 
         public async Task HandleMainMenuMessage(Update update)
@@ -77,6 +88,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 {
                     ChatID = update.Message.Chat.Id,
                     RegisterDate = DateTime.Now,
+                    IsNewUser = true
                 };
                 await _context.TgUsers.AddAsync(user);
             }
@@ -97,26 +109,6 @@ namespace Tg.PublicityHelperBot.Services.Bot
         }
 
 
-        public async Task<bool> IsAdmin(long chatId)
-        {
-            try
-            {
-                var member = await _botService.Client.GetChatMemberAsync(chatId, _botService.Client.BotId.Value);
-                if (member != null)
-                {
-                    if (member.Status == ChatMemberStatus.Administrator)
-                        return true;
-                    return false;
-                }
-                else return false;
-            }
-            catch
-            {
-                return false;
-            }
-
-        }
-
         public async Task HandleForwardedMessage(Update update)
         {
             var chatId = update.Message.Chat.Id;
@@ -124,12 +116,21 @@ namespace Tg.PublicityHelperBot.Services.Bot
 
             if (user.CurrentAction != CallBackActionNames.AddChannel) return;
 
-            var task = _botService.Client.GetChatMemberAsync(update.Message.ForwardFromChat.Id, _botService.Client.BotId.Value);
-            task.Wait();
 
-            if (task.Result == null || task.Result.Status != ChatMemberStatus.Administrator)
+            ChatMember member = null;
+            try
             {
-                await _botService.Client.SendTextMessageAsync(chatId, $"Бот @publicity_helper_bot не является админисратором указанного канала.");
+                member = await _botService.Client.GetChatMemberAsync(update.Message.ForwardFromChat.Id, _botService.Client.BotId.Value);
+            }
+            catch
+            {
+                await _botService.Client.SendTextMessageAsync(chatId, $"Бот @publicity_helper_bot не является участником указанного канала.");
+                return;
+            }
+
+            if (member.Status != ChatMemberStatus.Administrator)
+            {
+                await _botService.Client.SendTextMessageAsync(chatId, $"Бот @publicity_helper_bot не является администратором указанного канала.");
                 return;
             }
 
@@ -144,9 +145,11 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 ChannelId = update.Message.ForwardFromChat.Id,
                 Title = update.Message.ForwardFromChat.Title,
                 Owner = user,
-                SubscriptionEndDate = DateTime.Now.AddDays(7) //TODO: понятно да
+                SubscriptionEndDate = user.IsNewUser ? DateTime.Now.AddDays(7) : null
             };
             _context.Channels.Add(channel);
+            user.IsNewUser = false;
+
             await _context.SaveChangesAsync();
 
             await _botService.Client.SendTextMessageAsync(chatId, $"Канал успешно добавлен.");
@@ -161,11 +164,91 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 Channel channel = _context.Channels.FirstOrDefault(x => x.ID == _channelId);
                 await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.ChannelInfo);
 
+                string subEndDateInfo = string.Empty;
+
+                if (channel.SubscriptionEndDate.HasValue)
+                    subEndDateInfo = $"Подписка активна до {channel.SubscriptionEndDate}.{Environment.NewLine}";
+                else
+                    subEndDateInfo = $"Подписка не активна.{Environment.NewLine}";
+
                 var txt = $"Выбран канал {channel.Title}.{Environment.NewLine}" +
-                    $"Подписка активна до {channel.SubscriptionEndDate}.{Environment.NewLine}";
-                
+                    subEndDateInfo;
+
                 await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, txt, replyMarkup: KeyboardMarkups.ChannelInfo(channel));
             }
         }
+
+        public async Task HandleCreatePostAction(Update update)
+        {
+            var chatId = update.CallbackQuery.Message.Chat.Id;
+            TgUser user = _context.TgUsers.FirstOrDefault(x => x.ChatID == chatId);
+            if (!update.CallbackQuery.Data.Contains("|"))
+            {
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.CreatePost, user);
+                var channelList = _context.Channels.Where(x => x.OwnerId == user.ID).ToListAsync();
+                channelList.Wait();
+                var txt = $"Выберите канал для создания публикации.";
+                await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, txt, replyMarkup: (InlineKeyboardMarkup)KeyboardMarkups.CreatePost(channelList.Result));
+            }
+            else
+            {
+                var callBackData = update.CallbackQuery.Data;
+                var chId = callBackData[(callBackData.IndexOf("|") + 1)..];
+                Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == int.Parse(chId));
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.CreatePost + "|" + channel.ChannelId, user);
+                var txt = "Пришлите сюда сообщение, которрое хотите опубликовать:";
+
+                await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
+                    update.CallbackQuery.Message.MessageId, txt, replyMarkup: KeyboardMarkups.BackButton(CallBackActionNames.CreatePost));
+            }
+        }
+
+        public async Task HandleTextMessageAction(Update update)
+        {
+            TgUser user = _context.TgUsers.FirstOrDefault(x => x.ChatID == update.Message.Chat.Id);
+            if (user == null || !user.CurrentAction.StartsWith(CallBackActionNames.CreatePost + "|")) return;
+
+            string resultText = string.Empty;
+            resultText += update.Message.Text;
+            await _botService.Client.SendTextMessageAsync(update.Message.Chat.Id, resultText, replyMarkup: (InlineKeyboardMarkup)KeyboardMarkups.CreatingPost());
+        }
+
+        public async Task HandlePublishAction(Update update)
+        {
+            TgUser user = await _context.TgUsers.FirstOrDefaultAsync(x => x.ChatID == update.CallbackQuery.Message.Chat.Id);
+            if (user == null || !user.CurrentAction.StartsWith(CallBackActionNames.CreatePost + "|")) return;
+            var publishChannelId = long.Parse(user.CurrentAction[(user.CurrentAction.IndexOf("|") + 1)..]);
+            var text = update.CallbackQuery.Message.Text;
+            await _botService.Client.SendTextMessageAsync(publishChannelId, text);
+            await _botService.Client.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Сообщение опубликовано", replyMarkup: KeyboardMarkups.Default);
+        }
+
+        public async Task HandleDeleteChannelAction(Update update)
+        {
+            await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.DeleteChannel);
+
+            var channelId = long.Parse(update.CallbackQuery.Data[(update.CallbackQuery.Data.IndexOf("|") + 1)..]);
+            var channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == channelId);
+            if (channel == null) return;
+            await _botService.Client.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, $"Ваша подписка по каналу {channel.Title} будет аннулирована. " +
+                $"Вы действительно хотите удалить этот канал?", replyMarkup: KeyboardMarkups.DeleteChannel(channel)); ;
+        }
+
+        public async Task HandleYesDeleteChannelAction(Update update)
+        {
+            var channelId = long.Parse(update.CallbackQuery.Data[(update.CallbackQuery.Data.IndexOf("|") + 1)..]);
+            var channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == channelId);
+            if (channel == null) return;
+            _context.Channels.Remove(channel);
+
+            var task = _context.SaveChangesAsync();
+            task.Wait();
+
+            var channels = await _context.Channels.ToListAsync();
+
+            await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, $"Канал {channel.Title} удален.",
+                replyMarkup: KeyboardMarkups.BackButton(CallBackActionNames.Account));
+        }
+
     }
 }

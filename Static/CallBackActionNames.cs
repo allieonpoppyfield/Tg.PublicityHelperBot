@@ -18,5 +18,8 @@ namespace Tg.PublicityHelperBot.Static
 
         public static readonly string BuySubscription = "buy_subscription";
         public static readonly string DeleteChannel = "delete_channel";
+        public static readonly string Publish = "publish";
+         
+        public static readonly string YesDelete = "yes_delete_channel";
     }
 }

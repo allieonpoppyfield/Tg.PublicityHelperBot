@@ -16,6 +16,6 @@ namespace Tg.PublicityHelperBot.Models.Database
         public TgUser Owner { get; set; }
         public long OwnerId { get; set; }
 
-        public DateTime SubscriptionEndDate { get; set; }
+        public DateTime? SubscriptionEndDate { get; set; }
     }
 }

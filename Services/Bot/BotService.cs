@@ -17,7 +17,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
             _config = config.Value;
             Client = new TelegramBotClient(_config.BotToken);
             //Client.SetWebhookAsync("https://tgpublicityhelperbot.azurewebsites.net/api/BotPublicityInvokerRun");
-            Client.SetWebhookAsync("https://b79500f10c03.ngrok.io/api/BotPublicityInvokerRun");
+            Client.SetWebhookAsync("https://a83b7f6c9ebd.ngrok.io/api/BotPublicityInvokerRun");
         }
         public TelegramBotClient Client { get; }
     }

@@ -25,24 +25,30 @@ namespace Tg.PublicityHelperBot.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Update update)
         {
-            if (update.Message != null && update.Message.ForwardFromChat != null && update.Message.ForwardFromChat.Type == Telegram.Bot.Types.Enums.ChatType.Channel)
+            try
             {
-                await ManageForwardedMessage(update);
-            }
+                if (update.Message != null && update.Message.ForwardFromChat != null && update.Message.ForwardFromChat.Type == Telegram.Bot.Types.Enums.ChatType.Channel)
+                {
+                    await ManageForwardedMessage(update);
+                }
 
-            else if (update.Message != null && update.CallbackQuery == null)
-            {
-                await ManageTextMessage(update);
-                return Ok();
+                else if (update.Message != null && update.CallbackQuery == null)
+                {
+                    await ManageTextMessage(update);
+                    return Ok();
+                }
+                else if (update.CallbackQuery != null)
+                {
+                    await ManageCallBack(update);
+                    return Ok();
+                }
             }
-            else if (update.CallbackQuery != null)
+            catch (Exception ex)
             {
-                await ManageCallBack(update);
-                return Ok();
+                _ = ex;
             }
             return Ok();
         }
-
         private async Task ManageForwardedMessage(Update update)
         {
             await _updateService.HandleForwardedMessage(update);
@@ -56,18 +62,33 @@ namespace Tg.PublicityHelperBot.Controllers
             {
                 await _updateService.HandleMainMenulAction(update);
             }
-
-            if (callBackData == CallBackActionNames.AddChannel)
+            else if (callBackData == CallBackActionNames.Account)
+            {
+                await _updateService.HandleAccountMenuAction(update);
+            }
+            else if (callBackData == CallBackActionNames.AddChannel)
             {
                 await _updateService.HandleAddChannelAction(update);
             }
-
-            if (callBackData.StartsWith(CallBackActionNames.ChannelInfo))
+            else if (callBackData.StartsWith(CallBackActionNames.ChannelInfo))
             {
-
-
                 await _updateService.HandleChannelInfoAction(update);
-
+            }
+            else if (callBackData.StartsWith(CallBackActionNames.CreatePost))
+            {
+                await _updateService.HandleCreatePostAction(update);
+            }
+            else if (callBackData.StartsWith(CallBackActionNames.Publish))
+            {
+                await _updateService.HandlePublishAction(update);
+            }
+            else if (callBackData.StartsWith(CallBackActionNames.DeleteChannel))
+            {
+                await _updateService.HandleDeleteChannelAction(update);
+            }
+            else if (callBackData.StartsWith(CallBackActionNames.YesDelete))
+            {
+                await _updateService.HandleYesDeleteChannelAction(update);
             }
         }
 
@@ -77,14 +98,21 @@ namespace Tg.PublicityHelperBot.Controllers
             if (textMessage == "/start")
             {
                 await _updateService.HandleStartMessage(update);
+                return;
             }
             else if (textMessage == KeyboardTitles.MainMenuTitle)
             {
                 await _updateService.HandleMainMenuMessage(update);
+                return;
             }
             else if (textMessage == KeyboardTitles.AccountTitle)
             {
                 await _updateService.HandleAccountMenuMessage(update);
+                return;
+            }
+            else
+            {
+                await _updateService.HandleTextMessageAction(update);
             }
         }
 

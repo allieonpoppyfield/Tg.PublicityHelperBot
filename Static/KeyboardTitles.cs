@@ -20,5 +20,9 @@ namespace Tg.PublicityHelperBot.Static
         public static readonly string DeleteChannel = "Удалить канал";
         public static readonly string BuySubscription = "Продлить подписку на месяц";
 
+        public static string Publish = "Опубликовать пост";
+
+        public static string YesDelete = "Удалить канал";
+        public static string NoDelete = "Не удалять канал";
     }
 }
