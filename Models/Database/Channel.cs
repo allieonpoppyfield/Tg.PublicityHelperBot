@@ -9,7 +9,7 @@ namespace Tg.PublicityHelperBot.Models.Database
     {
         public long ID { get; set; }
 
-        public long ChannelId { get; set; }
+        public long ChatId { get; set; }
         public string Title { get; set; }
 
 

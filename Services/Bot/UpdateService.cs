@@ -134,7 +134,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 return;
             }
 
-            if (_context.Channels.FirstOrDefault(x => x.ChannelId == update.Message.ForwardFromChat.Id && x.OwnerId == user.ID) != null)
+            if (_context.Channels.FirstOrDefault(x => x.ChatId == update.Message.ForwardFromChat.Id && x.OwnerId == user.ID) != null)
             {
                 await _botService.Client.SendTextMessageAsync(chatId, $"Этот канал уже добавлен.");
                 return;
@@ -142,7 +142,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
 
             Channel channel = new()
             {
-                ChannelId = update.Message.ForwardFromChat.Id,
+                ChatId = update.Message.ForwardFromChat.Id,
                 Title = update.Message.ForwardFromChat.Title,
                 Owner = user,
                 SubscriptionEndDate = user.IsNewUser ? DateTime.Now.AddDays(7) : null
@@ -195,7 +195,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 var callBackData = update.CallbackQuery.Data;
                 var chId = callBackData[(callBackData.IndexOf("|") + 1)..];
                 Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == int.Parse(chId));
-                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.CreatePost + "|" + channel.ChannelId, user);
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.CreatePost + "|" + channel.ChatId, user);
                 var txt = "Пришлите сюда сообщение, которрое хотите опубликовать:";
 
                 await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
@@ -221,7 +221,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
             var publishChannelId = long.Parse(user.CurrentAction[(user.CurrentAction.IndexOf("|") + 1)..]);
             var text = update.CallbackQuery.Message.Text;
 
-            Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ChannelId == publishChannelId && x.OwnerId == user.ID);
+            Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ChatId == publishChannelId && x.OwnerId == user.ID);
             if (channel == null) return;
 
 
@@ -231,7 +231,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
             {
                 MessageId = message.MessageId,
                 Channel = channel,
-                Text = text.Substring(0, 10) + "..."
+                Text = text.Substring(0, 30) + "..."
             };
 
             await _context.UserMessages.AddAsync(userMessage);
@@ -284,14 +284,22 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 var callBackData = update.CallbackQuery.Data;
                 var chId = callBackData[(callBackData.IndexOf("|") + 1)..];
                 Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == int.Parse(chId));
-                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.EditPostForChannel + "|" + channel.ChannelId, user);
+                await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.EditPostForChannel + "|" + channel.ChatId, user);
                 
                 var messageList = _context.UserMessages.Where(x => x.ChannelId == channel.ID).ToListAsync();
                 messageList.Wait();
-
                 await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, 
                     update.CallbackQuery.Message.MessageId, "Выберите редактируемое сообщение:", replyMarkup: (InlineKeyboardMarkup)KeyboardMarkups.MessageList(messageList.Result));
             }
+        }
+
+        public async Task HandleEditMessageAction(Update update)
+        {
+            if (!int.TryParse(update.CallbackQuery.Data[(update.CallbackQuery.Data.IndexOf("|") + 1)..], out int msgId)) return;
+            UserMessage userMessage = await _context.UserMessages.Include(x => x.Channel).FirstOrDefaultAsync(x => x.Id == msgId);
+            if (userMessage == null)
+                return;
+            
         }
     }
 }

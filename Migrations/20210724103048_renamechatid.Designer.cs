@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tg.PublicityHelperBot.Models.Database;
 
 namespace Tg.PublicityHelperBot.Migrations
 {
     [DbContext(typeof(TgDatabaseContext))]
-    partial class TgDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20210724103048_renamechatid")]
+    partial class renamechatid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

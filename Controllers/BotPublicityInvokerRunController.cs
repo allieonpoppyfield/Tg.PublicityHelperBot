@@ -96,6 +96,10 @@ namespace Tg.PublicityHelperBot.Controllers
             {
                 await _updateService.HandleYesDeleteChannelAction(update);
             }
+            else if(callBackData.StartsWith(CallBackActionNames.EditMessage))
+            {
+                await _updateService.HandleEditMessageAction(update);
+            }
         }
 
         private async Task ManageTextMessage(Update update)

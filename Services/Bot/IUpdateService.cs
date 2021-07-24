@@ -23,5 +23,6 @@ namespace Tg.PublicityHelperBot.Services.Bot
         Task HandleYesDeleteChannelAction(Update update);
         Task HandleAccountMenuAction(Update update);
         Task HandleEditPostAction(Update update);
+        Task HandleEditMessageAction(Update update);
     }
 }
