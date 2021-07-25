@@ -22,7 +22,12 @@ namespace Tg.PublicityHelperBot.Static
 
         public static string Publish = "Опубликовать пост";
 
+        public static string EditedPublish = "Сохранить";
+
         public static string YesDelete = "Удалить канал";
         public static string NoDelete = "Не удалять канал";
+
+
+        public static string EditMessageText = "Изменить текст";
     }
 }

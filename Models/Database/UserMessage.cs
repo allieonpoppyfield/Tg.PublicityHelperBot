@@ -14,6 +14,6 @@ namespace Tg.PublicityHelperBot.Models.Database
         public long ChannelId { get; set; }
         public Channel Channel { get; set; }
 
-        public long MessageId { get; set; }
+        public int MessageId { get; set; }
     }
 }

@@ -45,7 +45,7 @@ namespace Tg.PublicityHelperBot.Controllers
             }
             catch (Exception ex)
             {
-                _ = ex;
+                await _updateService.ErrorMessage(update, ex.Message);
             }
             return Ok();
         }
@@ -56,50 +56,7 @@ namespace Tg.PublicityHelperBot.Controllers
 
         private async Task ManageCallBack(Update update)
         {
-            var callBackData = update.CallbackQuery.Data;
-
-            if (callBackData == CallBackActionNames.MainMenu)
-            {
-                await _updateService.HandleMainMenulAction(update);
-            }
-            else if (callBackData == CallBackActionNames.Account)
-            {
-                await _updateService.HandleAccountMenuAction(update);
-            }
-            else if (callBackData == CallBackActionNames.AddChannel)
-            {
-                await _updateService.HandleAddChannelAction(update);
-            }
-            else if (callBackData.StartsWith(CallBackActionNames.ChannelInfo))
-            {
-                await _updateService.HandleChannelInfoAction(update);
-            }
-            else if (callBackData.StartsWith(CallBackActionNames.CreatePost))
-            {
-                await _updateService.HandleCreatePostAction(update);
-            }
-            
-            else if (callBackData.StartsWith(CallBackActionNames.EditPostForChannel))
-            {
-                await _updateService.HandleEditPostAction(update);
-            }
-            
-            else if (callBackData.StartsWith(CallBackActionNames.Publish))
-            {
-                await _updateService.HandlePublishAction(update);
-            }
-            else if (callBackData.StartsWith(CallBackActionNames.DeleteChannel))
-            {
-                await _updateService.HandleDeleteChannelAction(update);
-            }
-            else if (callBackData.StartsWith(CallBackActionNames.YesDelete))
-            {
-                await _updateService.HandleYesDeleteChannelAction(update);
-            }
-            else if(callBackData.StartsWith(CallBackActionNames.EditMessage))
-            {
-                await _updateService.HandleEditMessageAction(update);
-            }
+            await _updateService.InvokeCallBackMethod(update);
         }
 
         private async Task ManageTextMessage(Update update)
@@ -122,7 +79,7 @@ namespace Tg.PublicityHelperBot.Controllers
             }
             else
             {
-                await _updateService.HandleTextMessageAction(update);
+                await _updateService.HandleUserTextMessage(update);
             }
         }
 

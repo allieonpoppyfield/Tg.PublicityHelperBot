@@ -160,6 +160,14 @@ namespace Tg.PublicityHelperBot.Static
                     CallbackData = $"{CallBackActionNames.DeleteChannel}|{channel.ID}"
                 }
             });
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.Back,
+                    CallbackData = CallBackActionNames.Account
+                }
+            });
             return new InlineKeyboardMarkup(keyboardList);
         }
 
@@ -240,6 +248,43 @@ namespace Tg.PublicityHelperBot.Static
                 {
                     Text = KeyboardTitles.Back,
                     CallbackData = CallBackActionNames.EditPostForChannel
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
+
+        internal static InlineKeyboardMarkup WhatCanIdo(long chatId, int messageId)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.EditMessageText,
+                    CallbackData = $"{CallBackActionNames.EditMessageText}|{chatId}|{messageId}",
+                }
+            });
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
+        internal static InlineKeyboardMarkup WhatCanIdoEdited(long chatId, int messageId, int newMessageChatId, int newMessageId)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.EditMessageText,
+                    CallbackData = $"{CallBackActionNames.EditMessageText}|{chatId}|{messageId}",
+                }
+            });
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.EditedPublish,
+                    CallbackData = $"{CallBackActionNames.EditedPublish}|{chatId}|{messageId}|{newMessageChatId}|{newMessageId}",
                 }
             });
             return new InlineKeyboardMarkup(keyboardList);

@@ -9,6 +9,7 @@ namespace Tg.PublicityHelperBot.Static
     {
         public static readonly string CreatePost = "create_post";
         public static readonly string EditPostForChannel = "edit_post_for_channel";
+        public static readonly string EditMessageText = "edit_text_message";
         public static readonly string EditMessage = "edit_message";
         public static readonly string AddChannel = "add_channel";
         public static readonly string MainMenu = "main_menu";
@@ -20,7 +21,11 @@ namespace Tg.PublicityHelperBot.Static
         public static readonly string BuySubscription = "buy_subscription";
         public static readonly string DeleteChannel = "delete_channel";
         public static readonly string Publish = "publish";
-         
+        
+        public static readonly string EditedPublish = "edited_publish";
+
+
+
         public static readonly string YesDelete = "yes_delete_channel";
     }
 }
