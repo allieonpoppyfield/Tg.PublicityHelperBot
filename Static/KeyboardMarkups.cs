@@ -268,7 +268,7 @@ namespace Tg.PublicityHelperBot.Static
             return new InlineKeyboardMarkup(keyboardList);
         }
 
-        internal static InlineKeyboardMarkup WhatCanIdoEdited(long chatId, int messageId, int newMessageChatId, int newMessageId)
+        internal static InlineKeyboardMarkup WhatCanIdoEdited(long chatId, int messageId, long newMessageChatId, int newMessageId)
         {
             var keyboardList = new List<List<InlineKeyboardButton>>();
             keyboardList.Add(new()

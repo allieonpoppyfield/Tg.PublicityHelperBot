@@ -173,7 +173,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
             else if (user.CurrentAction.StartsWith(CallBackActionNames.EditMessageText))
             {
                 var callBackData = user.CurrentAction;
-                var chatId = long.Parse(callBackData[(callBackData.IndexOf("|") + 1)..(callBackData.LastIndexOf("|") - 1)]);
+                var chatId = long.Parse(callBackData[(callBackData.IndexOf("|") + 1)..(callBackData.LastIndexOf("|"))]);
                 var messageId = int.Parse(callBackData[(callBackData.LastIndexOf("|") + 1)..]);
 
 
@@ -196,7 +196,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
                         entities: msg.Entities, replyMarkup: msg.ReplyMarkup);
 
                     var replymsg = await _botService.Client.SendTextMessageAsync(update.Message.Chat.Id, "Текст изменен.",
-                        replyMarkup: KeyboardMarkups.WhatCanIdoEdited(chatId, messageId, (int)msg.Chat.Id, msg.MessageId));
+                        replyMarkup: KeyboardMarkups.WhatCanIdoEdited(chatId, messageId, (long)msg.Chat.Id, msg.MessageId));
                 }
                 catch (Exception ex)
                 {
@@ -213,15 +213,19 @@ namespace Tg.PublicityHelperBot.Services.Bot
         {
             var user = await _context.TgUsers.FirstOrDefaultAsync(x => x.ChatID == update.CallbackQuery.Message.Chat.Id);
             var state = user.CurrentAction = update.CallbackQuery.Data;
+            await _context.SaveChangesAsync();
+
             var ids = state.Split("|").ToList().GetRange(1, 4);
             if (ids.Count != 4)
                 throw new Exception("Не четыре параметра, ошибка");
+
             var msg = await _botService.Client.ForwardMessageAsync(PROXY_CHAT_ID, ids[2], int.Parse(ids[3]));
 
             await _botService.Client.EditMessageTextAsync(ids[0], int.Parse(ids[1]), msg.Text, replyMarkup: msg.ReplyMarkup);
 
             var userMessage = await _context.UserMessages.Include(x => x.Channel).FirstOrDefaultAsync(x => x.MessageId == int.Parse(ids[1]) && x.Channel.ChatId == long.Parse(ids[0]));
             userMessage.Text = msg.Text.Substring(0, msg.Text.Length >= 30 ? 30 : msg.Text.Length) + (msg.Text.Length >= 30 ? "..." : string.Empty);
+            await _context.SaveChangesAsync();
 
             await _botService.Client.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Публикация сохранена.", replyMarkup: KeyboardMarkups.MainMenu);
         }
