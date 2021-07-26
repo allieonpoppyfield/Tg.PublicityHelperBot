@@ -265,6 +265,15 @@ namespace Tg.PublicityHelperBot.Static
                     CallbackData = $"{CallBackActionNames.EditMessageText}|{chatId}|{messageId}",
                 }
             });
+
+            keyboardList.Add(new()
+            {
+                new()
+                {
+                    Text = KeyboardTitles.AddUrlButtons,
+                    CallbackData = $"{CallBackActionNames.AddUrlButtons}|{chatId}|{messageId}",
+                }
+            });
             return new InlineKeyboardMarkup(keyboardList);
         }
 
@@ -289,5 +298,26 @@ namespace Tg.PublicityHelperBot.Static
             });
             return new InlineKeyboardMarkup(keyboardList);
         }
+
+        internal static InlineKeyboardMarkup GetUrlButtons(string[] arr)
+        {
+            var keyboardList = new List<List<InlineKeyboardButton>>();
+            for (int i = 0; i < arr.Length; i ++)
+            {
+                var name = arr[i].Split("&")[0].Trim();
+                var uri = new UriBuilder(arr[i].Split("&")[1].Trim());
+
+                keyboardList.Add(new()
+                {
+                    new()
+                    {
+                        Text = name,
+                        Url = uri.Uri.AbsoluteUri
+                    }
+                });
+            }
+            return new InlineKeyboardMarkup(keyboardList);
+        }
+
     }
 }

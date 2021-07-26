@@ -29,5 +29,7 @@ namespace Tg.PublicityHelperBot.Static
 
 
         public static string EditMessageText = "Изменить текст";
+
+        public static string AddUrlButtons = "Добавить URL кнопки";
     }
 }

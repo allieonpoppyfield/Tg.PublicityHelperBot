@@ -24,8 +24,8 @@ namespace Tg.PublicityHelperBot.Static
         
         public static readonly string EditedPublish = "edited_publish";
 
-
-
         public static readonly string YesDelete = "yes_delete_channel";
+
+        public static readonly string AddUrlButtons = "add_url_buttons";
     }
 }

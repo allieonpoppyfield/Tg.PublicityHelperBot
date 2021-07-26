@@ -41,9 +41,10 @@ namespace Tg.PublicityHelperBot.Services.Bot
             { CallBackActionNames.EditMessage, nameof(HandleEditMessageAction) },
             { CallBackActionNames.EditMessageText, nameof(HandleEditMessageTextAction) },
             { CallBackActionNames.EditedPublish, nameof(HandlePublishEditedMessageAction) },
+            { CallBackActionNames.AddUrlButtons, nameof(HandleAddUrlButtons) },
         };
 
-
+     
 
         public async Task InvokeCallBackMethod(Update update)
         {
@@ -203,12 +204,45 @@ namespace Tg.PublicityHelperBot.Services.Bot
                     _ = ex;
                 }
             }
+            
+            else if(user.CurrentAction.StartsWith(CallBackActionNames.AddUrlButtons))
+            {
+                var callBackData = user.CurrentAction;
+                var chatId = long.Parse(callBackData[(callBackData.IndexOf("|") + 1)..(callBackData.LastIndexOf("|"))]);
+                var messageId = int.Parse(callBackData[(callBackData.LastIndexOf("|") + 1)..]);
+
+                UserMessage userMessage = await _context.UserMessages.Include(x => x.Channel).FirstOrDefaultAsync(x => x.MessageId == messageId);
+                
+                string[] urlArray = update.Message.Text.Split("\n");
+
+
+                var msgProxy = await _botService.Client.ForwardMessageAsync(PROXY_CHAT_ID
+                       , userMessage.Channel.ChatId, (int)userMessage.MessageId);
+
+                var msg = await _botService.Client.SendTextMessageAsync(PROXY_CHAT_ID
+                    , msgProxy.Text, replyMarkup: msgProxy.ReplyMarkup);
+                
+                msg = await _botService.Client.EditMessageTextAsync(msg.Chat.Id, msg.MessageId, msg.Text, replyMarkup: KeyboardMarkups.GetUrlButtons(urlArray));
+
+                //показываем сообщение пользователю
+                await _botService.Client.SendTextMessageAsync(update.Message.Chat.Id, msg.Text,
+                    entities: msg.Entities, replyMarkup: msg.ReplyMarkup);
+                
+                var replymsg = await _botService.Client.SendTextMessageAsync(update.Message.Chat.Id, "URL кнопки добавлены",
+                        replyMarkup: KeyboardMarkups.WhatCanIdoEdited(chatId, messageId, (long)msg.Chat.Id, msg.MessageId));
+            }
         }
         #endregion
 
 
         #region PrivateApiMethods
+        private async Task HandleAddUrlButtons(Update update)
+        {
+            await SetUserState(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Data);
+            await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, $"Кнопка 1 & http://....{Environment.NewLine}" +
+                                                                                                                                        $"Кнопка 2 & http://....");
 
+        }
         private async Task HandlePublishEditedMessageAction(Update update)
         {
             var user = await _context.TgUsers.FirstOrDefaultAsync(x => x.ChatID == update.CallbackQuery.Message.Chat.Id);
@@ -299,7 +333,7 @@ namespace Tg.PublicityHelperBot.Services.Bot
                 var chId = callBackData[(callBackData.IndexOf("|") + 1)..];
                 Channel channel = await _context.Channels.FirstOrDefaultAsync(x => x.ID == int.Parse(chId));
                 await SetUserState(update.CallbackQuery.Message.Chat.Id, CallBackActionNames.CreatePost + "|" + channel.ChatId, user);
-                var txt = "Пришлите сюда сообщение, которрое хотите опубликовать:";
+                var txt = "Пришлите сюда сообщение, которое хотите опубликовать:";
 
                 await _botService.Client.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
                     update.CallbackQuery.Message.MessageId, txt, replyMarkup: KeyboardMarkups.BackButton(CallBackActionNames.CreatePost));
